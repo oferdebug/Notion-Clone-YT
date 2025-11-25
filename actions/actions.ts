@@ -5,8 +5,8 @@
 import { adminDb } from '../firebase-admin';
 import { auth } from '@clerk/nextjs/server';
 
-export async function createNewDocument() {
-	const { sessionClaims, userId } = await auth();
+export async function createNewDocument(): Promise<{ docId: string }> {
+	const { userId } = await auth();
 
 	if (!userId) {
 		throw new Error('Unauthorized');

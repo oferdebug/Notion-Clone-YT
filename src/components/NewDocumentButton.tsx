@@ -1,6 +1,7 @@
 /** @format */
 
 'use client';
+
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { useTransition } from 'react';
@@ -12,8 +13,12 @@ function NewDocumentButton() {
 
 	const handleCreateNewDocument = () => {
 		startTransition(async () => {
-			const { docId } = await createNewDocument();
-			router.push(`/document/${docId}`);
+			try {
+				const { docId } = await createNewDocument();
+				router.push(`/doc/${docId}`);
+			} catch (error) {
+				console.error('Failed to create document:', error);
+			}
 		});
 	};
 
@@ -21,7 +26,7 @@ function NewDocumentButton() {
 		<Button
 			onClick={handleCreateNewDocument}
 			disabled={isPending}>
-			{isPending ? ' Creating...' : 'New Document'}
+			{isPending ? 'Creating...' : 'New Document'}
 		</Button>
 	);
 }

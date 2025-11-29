@@ -8,11 +8,13 @@ import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { db } from '../../firebase';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import useOwner from '@/lib/useOwner';
 
 function Document({ id }: { id: string }) {
 	const [data, loading, error] = useDocumentData(doc(db, 'documents', id));
 	const [input, setInput] = useState<string | null>(null);
 	const [isUpdating, startTransition] = useTransition();
+	const isOwner = useOwner(); // Custom hook to determine if the user is the owner
 
 	const currentTitle = input ?? data?.title ?? '';
 
@@ -47,9 +49,9 @@ function Document({ id }: { id: string }) {
 	return (
 		<div>
 			<div>
-				<div className={'flex max-w-6xl mx-auto justify-between pb-5'}>
+				<div className='flex max-w-6xl mx-auto justify-between pb-5'>
 					<form
-						className='flex space-x-2'
+						className='flex flex-1 space-x-2'
 						onSubmit={updateTitle}>
 						{/* Updated Title */}
 						<Input

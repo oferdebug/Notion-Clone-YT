@@ -11,7 +11,9 @@ function DocLayout({
 }) {
 	auth.protect();
 
-	return <div>{children}</div>;
+	const docId = string;
+
+	return <div data-doc-id={docId}>{children}</div>;
 }
 
 export default DocLayout;

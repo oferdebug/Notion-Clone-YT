@@ -2,13 +2,13 @@
 
 'use client';
 
+import useOwner from '@/lib/useOwner';
 import { doc, updateDoc } from 'firebase/firestore';
 import { FormEvent, useState, useTransition } from 'react';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
 import { db } from '../../firebase';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import useOwner from '@/lib/useOwner';
 
 function Document({ id }: { id: string }) {
 	const [data, loading, error] = useDocumentData(doc(db, 'documents', id));
@@ -46,8 +46,10 @@ function Document({ id }: { id: string }) {
 		return <p className='p-4 text-gray-500'>Document not found.</p>;
 	}
 
+	const ownershipRole = isOwner ? 'owner' : 'viewer';
+
 	return (
-		<div>
+		<section data-ownership-role={ownershipRole}>
 			<div>
 				<div className='flex max-w-6xl mx-auto justify-between pb-5'>
 					<form
@@ -77,7 +79,7 @@ function Document({ id }: { id: string }) {
 				{/* Avataers */}
 			</div>
 			{/*Collabaretive Editting */}
-		</div>
+		</section>
 	);
 }
 

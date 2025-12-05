@@ -1,48 +1,38 @@
-/** @format */
+"use client";
 
-'use client';
-
-import { useMyPresence, useOthers } from '@liveblocks/react/suspense';
-import React, { PointerEvent } from 'react';
-
-import FollowPointer from './FollowPointer';
+import { useMyPresence, useOthers } from "@liveblocks/react";
+import React from "react";
+import { FollowPointer } from "./FollowPointer";
 
 function LiveCursorProvider({ children }: { children: React.ReactNode }) {
-	const [myPresence, updateMyPresence] = useMyPresence();
-	const others = useOthers();
+  const [_myPresence, updateMyPresence] = useMyPresence();
+  const _others = useOthers();
 
-	function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
-		const cursor = { x: Math.floor(e.pageX), y: Math.floor(e.pageY) };
-		updateMyPresence({ cursor });
-	}
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    //Update My Presence From ClientX and ClientY for FullPage Cursor Tracking Event
+    const cursor = { x: Math.floor(e.pageX), y: Math.floor(e.pageY) };
+    updateMyPresence({ cursor });
+  }
 
-	function handlePointerLeave() {
-		updateMyPresence({ cursor: null });
-	}
+  function handlePointerLeave() {
+    updateMyPresence({ cursor: null });
+  }
 
-	return (
-		<div
-			data-self-cursor={
-				myPresence.cursor
-					? `${myPresence.cursor.x},${myPresence.cursor.y}`
-					: 'none'
-			}
-			onPointerMove={handlePointerMove}
-			onPointerLeave={handlePointerLeave}>
-			{others
-				.filter((other) => other.presence?.cursor !== null)
-				.map(({ connectionId, presence, info }) => (
-					<FollowPointer
-						key={connectionId}
-						connectionId={connectionId}
-						cursor={presence.cursor!}
-						info={info}
-						title={`User: ${connectionId}`}
-					/>
-				))}
-			{children}
-		</div>
-	);
+  return (
+    <div onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
+      {_others
+        .filter((other) => other.presence.cursor !== null)
+        .map(({ connectionId, presence, info }) => (
+          <FollowPointer
+            key={connectionId}
+            info={info}
+            x={presence.cursor!.x}
+            y={presence.cursor!.y}
+          />
+        ))}
+      {children}
+    </div>
+  );
 }
 
 export default LiveCursorProvider;

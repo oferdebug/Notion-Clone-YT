@@ -1,5 +1,19 @@
 {
 	"typescript.tsdk": "node_modules\\typescript\\lib",
 	"reactSnippets.settings.importReactOnTop": false,
-	"jsJsxSnippets.settings.importReactOnTop": false
+	"jsJsxSnippets.settings.importReactOnTop": false,
+	"claudeCodeChat.permissions.yoloMode": true,
+	 "github.copilot.enable": {
+    "*": true
+},
+"cSpell.words": [
+	"Avataers",
+	"blocknote",
+	"Collabaretive",
+	"Deleteting",
+	"Editting",
+	"nodenext",
+	"vaul"
+]
 }
+

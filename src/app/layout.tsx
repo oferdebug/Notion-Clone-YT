@@ -16,19 +16,19 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	return (
-		<html lang='en'>
-			<ClerkProvider>
-				<body>
-					<Header />
-					<div className='flex min-h-screen'>
-						<SideBar />
-						{/* <div className='flex-1 p-4 bg-gray-100 overflow-y-auto scrollbar-hide'> */}
-						{children}
-						{/* </div> */}
-					</div>
-				</body>
-			</ClerkProvider>
-		</html>
-	);
+  return (
+    <html lang="en">
+      <ClerkProvider>
+        <body>
+          <Header />
+          <div className="flex min-h-screen">
+            <SideBar />
+            <div className="flex-1 p-4 bg-gray-100 overflow-y-auto scrollbar-hide">
+              {children}
+            </div>
+          </div>
+        </body>
+      </ClerkProvider>
+    </html>
+  );
 }

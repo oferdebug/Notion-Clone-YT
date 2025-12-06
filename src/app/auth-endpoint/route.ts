@@ -1,39 +1,69 @@
-import { adminDb } from '../../../firebase-admin';
-import liveblocks from '@/lib/liveblocks';
-import  { auth }  from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { adminDb } from "../../../firebase-admin";
+import liveblocks from "@/lib/liveblocks";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-    const { sessionClaims } = await auth(); // Ensure the user is authenticated
+  // Auth check: Get authenticated user from Clerk
+  const { userId } = await auth(); // <-await!
+  const user = await currentUser();
 
-    const { room } = await req.json();
+  // Prevent Liveblocks 500 error: Ensure both Clerk ID and email exist
+  if (!userId || !user?.emailAddresses?.[0]?.emailAddress) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
 
-    const session = liveblocks.prepareSession(sessionClaims?.email || '', {
-        userInfo: {
-            name: sessionClaims?.fullName || '',
-            email: sessionClaims?.email || '',
-            avatar: sessionClaims?.imageUrl || '',
-        },
-    });
+  const { room } = await req.json();
 
-    const usersInRoom = await adminDb
-        .collectionGroup('rooms')
-        .where('userId', '==', sessionClaims?.email)
-        .get();
+  // Use user's email as the Liveblocks userId
+  const liveblocksUserId = user.emailAddresses[0].emailAddress;
+  const userName = user.fullName || user.firstName || liveblocksUserId;
+  const userAvatar = user.imageUrl || "";
 
-    const userInRoom = usersInRoom.docs.find((doc) => doc.id === room);
+  // Setup Liveblocks session with user metadata
+  const session = liveblocks.prepareSession(liveblocksUserId, {
+    userInfo: {
+      name: userName,
+      email: liveblocksUserId,
+      avatar: userAvatar,
+    },
+  });
 
-    if (userInRoom?.exists) {
-        session.allow(room, session.FULL_ACCESS);
-        const { body, status } = await session.authorize();
+  // Permission check against Firestore
+  try {
+    const userRoomRef = adminDb
+      .collection("rooms")
+      .doc(room)
+      .collection("users")
+      .doc(liveblocksUserId);
 
-        console.log(`✅ User ${sessionClaims?.email} authorized for room ${room}`);
+    const userInRoom = await userRoomRef.get();
 
-        return new Response(body, { status });
+    if (userInRoom.exists) {
+      // User is authorized for this room
+      session.allow(room, session.FULL_ACCESS);
+      const { body, status } = await session.authorize();
+
+      console.log(`✅ User ${liveblocksUserId} authorized for room ${room}`);
+
+      return new Response(body, { status });
     } else {
-        return NextResponse.json(
-            { message: `❌ User ${sessionClaims?.email} not authorized for room ${room}` },
-            { status: 403 }
-        );
+      // User lacks permissions
+      console.log(
+        `❌ User ${liveblocksUserId} not authorized for room ${room}`
+      );
+      return NextResponse.json(
+        {
+          message: `You don't have access to this document.`,
+        },
+        { status: 403 }
+      );
     }
+  } catch (error) {
+    console.error("CRITICAL AUTH ERROR:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error during authorization." },
+      { status: 500 }
+    );
+  }
 }

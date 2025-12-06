@@ -3,7 +3,7 @@
 // Define Liveblocks types for your application
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 declare global {
-	interface Liveblocks {
+  interface Liveblocks {
     // Each user's Presence, for useMyPresence, useOthers, etc.
     Presence: {
       // Example, real-time cursor coordinates
@@ -11,7 +11,10 @@ declare global {
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
-    Storage: object;
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    Storage: {
+      // Empty storage - we're using Yjs for document storage
+    };
 
     // Custom user info set when authenticating with a secret key
     UserMeta: {
@@ -24,10 +27,8 @@ declare global {
     };
 
     // Custom events, for useBroadcastEvent, useEventListener
-    RoomEvent: object;
-    // Example has two events, using a union
-    // | { type: "PLAY" }
-    // | { type: "REACTION"; emoji: "🔥" };
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    RoomEvent: {};
 
     // Custom metadata set on threads, for useThreads, useCreateThread, etc.
     ThreadMetadata: {

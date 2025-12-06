@@ -15,17 +15,22 @@ function RoomProvider({
 		children: React.ReactNode;
 	}) {
 	return (
-		<RoomProviderWrapper
-			id={roomId}
-			initialPresence={{
-				cursor: null,
-			}}
-		>
-			<ClientSideSuspense fallback={<LoadingSpinner />}>
-				<LiveCursorProvider>{children}</LiveCursorProvider>
-			</ClientSideSuspense>
-		</RoomProviderWrapper>
-	);
+    <RoomProviderWrapper
+      id={roomId}
+      initialPresence={{
+        cursor: null,
+      }}
+      initialStorage={
+        {
+          // Empty initial storage
+        }
+      }
+    >
+      <ClientSideSuspense fallback={<LoadingSpinner />}>
+        <LiveCursorProvider>{children}</LiveCursorProvider>
+      </ClientSideSuspense>
+    </RoomProviderWrapper>
+  );
 };
 
 export default RoomProvider;

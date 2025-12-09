@@ -5,6 +5,7 @@ import { doc } from 'firebase/firestore';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { FileText } from 'lucide-react';
 
 function SidebarOption({ href, id }: { href: string; id: string }) {
 	const [data, loading, error] = useDocumentData(doc(db, 'documents', id));
@@ -13,16 +14,16 @@ function SidebarOption({ href, id }: { href: string; id: string }) {
 
 	if (loading) {
 		return (
-			<div className='border p-2 rounded-md border-gray-300 animate-pulse'>
-				<p className='h-4 bg-gray-200 rounded' />
+			<div className='p-3 rounded-lg bg-muted animate-pulse'>
+				<div className='h-4 bg-muted-foreground/20 rounded w-3/4' />
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className='border p-2 rounded-md border-red-400 text-red-500 text-sm'>
-				Failed to load document
+			<div className='p-3 rounded-lg border border-destructive/50 bg-destructive/10'>
+				<p className='text-destructive text-xs'>Failed to load</p>
 			</div>
 		);
 	}
@@ -32,10 +33,19 @@ function SidebarOption({ href, id }: { href: string; id: string }) {
 	return (
 		<Link
 			href={href}
-			className={`border p-2 rounded-md ${
-				isActive ? 'bg-gray-300 font-bold border-black' : 'border-gray-400'
-			}`}>
-			<p className='truncate'>{data.title}</p>
+			className={`
+				group flex items-center gap-3 p-3 rounded-lg transition-all duration-200
+				${isActive 
+					? 'bg-primary text-primary-foreground shadow-sm' 
+					: 'hover:bg-secondary text-foreground'
+				}
+			`}
+		>
+			<FileText 
+				size={16} 
+				className={`flex- shrink-0 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}
+			/>
+			<p className='truncate text-sm font-medium'>{data.title}</p>
 		</Link>
 	);
 }

@@ -5,6 +5,8 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import Header from '@/components/header';
 import SideBar from '@/components/sideBar';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { Toaster } from '@/components/Toaster';
 
 export const metadata: Metadata = {
 	title: 'Notion-Clone',
@@ -17,18 +19,26 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <ClerkProvider>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
         <body>
-          <Header />
-          <div className="flex min-h-screen">
-            <SideBar />
-            <div className="flex-1 p-4 bg-gray-100 overflow-y-auto scrollbar-hide">
-              {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Header />
+            <div className="flex min-h-screen">
+              <SideBar />
+              <div className="flex-1 p-4 bg-background overflow-y-auto scrollbar-hide">
+                {children}
+              </div>
             </div>
-          </div>
+            <Toaster />
+          </ThemeProvider>
         </body>
-      </ClerkProvider>
-    </html>
+      </html>
+    </ClerkProvider>
   );
 }

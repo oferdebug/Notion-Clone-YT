@@ -1,5 +1,5 @@
-// components/Editor.tsx
 "use client";
+// components/Editor.tsx
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import Document from "@tiptap/extension-document";
@@ -20,79 +20,99 @@ import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useRoom, useSelf } from "@liveblocks/react/suspense";
-import { useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import * as Y from "yjs";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import LoadingSpinner from "./LoadingSpinner";
+import EditorToolbar from "./EditorToolbar";
 
 export default function Editor() {
   const room = useRoom() as never;
   const userInfo = useSelf((me) => me.info);
-
-  const yjsProvider = useMemo(() => {
-    const yDoc = new Y.Doc();
-    const provider = new LiveblocksYjsProvider(room, yDoc);
-    return { yDoc, provider };
-  }, [room]);
+  const [provider, setProvider] = useState<{
+    yDoc: Y.Doc;
+    provider: LiveblocksYjsProvider;
+  } | null>(null);
 
   useEffect(() => {
+    const yDoc = new Y.Doc();
+    const yjsProvider = new LiveblocksYjsProvider(room, yDoc);
+
+    const timer = setTimeout(() => {
+      setProvider({ yDoc, provider: yjsProvider });
+    }, 0);
+
     return () => {
-      yjsProvider.yDoc?.destroy();
-      yjsProvider.provider?.destroy();
+      clearTimeout(timer);
+      yDoc?.destroy();
+      yjsProvider?.destroy();
     };
-  }, [yjsProvider]);
+  }, [room]);
 
   const editor = useEditor(
     {
-      extensions: [
-        Document,
-        Paragraph,
-        Text,
-        Bold,
-        Italic,
-        Strike,
-        Code,
-        Heading,
-        BulletList,
-        OrderedList,
-        ListItem,
-        Blockquote,
-        CodeBlock,
-        HardBreak,
-        Collaboration.configure({
-          document: yjsProvider.yDoc,
-        }),
-        CollaborationCursor.configure({
-          provider: yjsProvider.provider,
-          user: {
-            name: userInfo?.name || "Anonymous",
-            color: "#3b82f6",
-          },
-        }),
-        Placeholder.configure({
-          placeholder: "Type '/' for commands...",
-        }),
-      ],
+      extensions: provider
+        ? [
+            Document,
+            Paragraph,
+            Text,
+            Bold.configure(),
+            Italic.configure(),
+            Strike.configure(),
+            Code.configure(),
+            Heading.configure({
+              levels: [1, 2, 3],
+            }),
+            BulletList.configure(),
+            OrderedList.configure(),
+            ListItem,
+            Blockquote.configure(),
+            CodeBlock.configure(),
+            HardBreak,
+            Collaboration.configure({
+              document: provider.yDoc,
+            }),
+            CollaborationCursor.configure({
+              provider: provider.provider,
+              user: {
+                name: userInfo?.name || "Anonymous",
+                color: "#6366f1",
+              },
+            }),
+            Placeholder.configure({
+              placeholder: "Type '/' for commands...",
+            }),
+          ]
+        : [
+            Document,
+            Paragraph,
+            Text,
+            Placeholder.configure({
+              placeholder: "Loading...",
+            }),
+          ],
       editorProps: {
         attributes: {
           class: "focus:outline-none",
         },
       },
     },
-    [yjsProvider.yDoc, yjsProvider.provider, userInfo]
+    [provider?.yDoc, provider?.provider, userInfo]
   );
 
-  if (!editor) {
+  if (!editor || !provider) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner />
+      <div className="flex items-center justify-center h-screen bg-background">
+        <LoadingSpinner color="brand" centered />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto pt-20 pb-40 px-12">
+    <div className="min-h-screen bg-background">
+      <EditorToolbar editor={editor} />
+      
+      <div className="max-w-5xl mx-auto pt-8 pb-40 px-8">
         <EditorContent editor={editor} />
       </div>
     </div>

@@ -29,7 +29,7 @@ function RoomProvider({
         messages: new LiveList<any>([]),
       }}
     >
-      <ClientSideSuspense fallback={<LoadingSpinner color="success" />}>
+      <ClientSideSuspense fallback={<LoadingSpinner color="brand" centered />}>
         <LiveCursorProvider>{children}</LiveCursorProvider>
       </ClientSideSuspense>
     </RoomProviderWrapper>

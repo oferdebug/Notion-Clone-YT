@@ -1,11 +1,12 @@
 /** @format */
 'use client';
-import { db } from '../../firebase';
 import { doc } from 'firebase/firestore';
+import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
-import { FileText } from 'lucide-react';
+
+import { db } from '../../firebase';
 
 function SidebarOption({ href, id }: { href: string; id: string }) {
 	const [data, loading, error] = useDocumentData(doc(db, 'documents', id));
@@ -43,7 +44,7 @@ function SidebarOption({ href, id }: { href: string; id: string }) {
 		>
 			<FileText 
 				size={16} 
-				className={`flex- shrink-0 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}
+				className={`flex-shrink-0 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}
 			/>
 			<p className='truncate text-sm font-medium'>{data.title}</p>
 		</Link>

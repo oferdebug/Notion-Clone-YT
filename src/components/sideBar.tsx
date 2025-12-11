@@ -1,12 +1,28 @@
 "use client";
 /** @format */
-import { useMemo } from "react";
-import { useUser } from "@clerk/nextjs";
-import { MenuIcon } from "lucide-react";
-import { useCollection } from "react-firebase-hooks/firestore";
-import { collection, query, DocumentData } from "firebase/firestore";
-import NewDocumentButton from "./NewDocumentButton";
-import SidebarOption from "./SidebarOption";
+import {
+  useMemo,
+  useState,
+} from 'react';
+
+import {
+  collection,
+  DocumentData,
+  query,
+} from 'firebase/firestore';
+import {
+  MenuIcon,
+  Search,
+  X,
+} from 'lucide-react';
+import { useCollection } from 'react-firebase-hooks/firestore';
+
+import { useUser } from '@clerk/nextjs';
+
+import { db } from '../../firebase';
+import NewDocumentButton from './NewDocumentButton';
+import SidebarOption from './SidebarOption';
+import { Input } from './ui/input';
 import {
   Sheet,
   SheetContent,
@@ -14,8 +30,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
-import { db } from "../../firebase";
+} from './ui/sheet';
 
 type RoomDocument = {
   id: string;
@@ -28,6 +43,7 @@ type RoomDocument = {
 function SideBar() {
   const { user } = useUser();
   const userId = user?.id ?? null;
+  const [searchQuery, setSearchQuery] = useState("");
 
   const roomsRef = userId ? collection(db, "users", userId, "rooms") : null;
   const [data] = useCollection(roomsRef ? query(roomsRef) : null);
@@ -64,47 +80,105 @@ function SideBar() {
     );
   }, [data]);
 
+  // Filter documents based on search
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return groupedData;
+
+    const query = searchQuery.toLowerCase();
+    return {
+      owner: groupedData.owner.filter(doc => 
+        doc.roomId.toLowerCase().includes(query) || 
+        doc.id.toLowerCase().includes(query)
+      ),
+      editor: groupedData.editor.filter(doc => 
+        doc.roomId.toLowerCase().includes(query) || 
+        doc.id.toLowerCase().includes(query)
+      ),
+    };
+  }, [groupedData, searchQuery]);
+
   const menuOptions = (
     <div className="flex flex-col gap-3">
       <NewDocumentButton />
 
+      {/* Search Input */}
+      <div className="relative">
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          size={18}
+        />
+        <Input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search documents..."
+          className="pl-10 pr-10 bg-muted/50 border-border focus:bg-background transition-colors"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-muted transition-colors"
+          >
+            <X size={16} className="text-muted-foreground" />
+          </button>
+        )}
+      </div>
+
       <div className="flex flex-col gap-2 mt-2">
-        {groupedData.owner.length === 0 ? (
+        {filteredData.owner.length === 0 && filteredData.editor.length === 0 ? (
           <div className="px-3 py-6 text-center">
-            <p className="text-muted-foreground text-sm">No documents yet</p>
-            <p className="text-muted-foreground text-xs mt-1">Create your first document</p>
+            {searchQuery ? (
+              <>
+                <Search className="mx-auto mb-2 text-muted-foreground" size={24} />
+                <p className="text-muted-foreground text-sm">No documents found</p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  Try a different search term
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground text-sm">No documents yet</p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  Create your first document
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>
-            <h2 className="text-muted-foreground font-semibold text-xs uppercase tracking-wider px-2 mb-1">
-              My Documents
-            </h2>
-            <div className="flex flex-col gap-1">
-              {groupedData.owner.map((doc) => (
-                <SidebarOption
-                  key={doc.id}
-                  id={doc.id}
-                  href={`/doc/${doc.roomId}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
+            {filteredData.owner.length > 0 && (
+              <>
+                <h2 className="text-muted-foreground font-semibold text-xs uppercase tracking-wider px-2 mb-1">
+                  My Documents ({filteredData.owner.length})
+                </h2>
+                <div className="flex flex-col gap-1">
+                  {filteredData.owner.map((doc) => (
+                    <SidebarOption
+                      key={doc.id}
+                      id={doc.id}
+                      href={`/doc/${doc.roomId}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
-        {groupedData.editor.length > 0 && (
-          <>
-            <h2 className="text-muted-foreground font-semibold text-xs uppercase tracking-wider px-2 mt-4 mb-1">
-              Shared With Me
-            </h2>
-            <div className="flex flex-col gap-1">
-              {groupedData.editor.map((doc) => (
-                <SidebarOption
-                  key={doc.id}
-                  id={doc.id}
-                  href={`/doc/${doc.roomId}`}
-                />
-              ))}
-            </div>
+            {filteredData.editor.length > 0 && (
+              <>
+                <h2 className="text-muted-foreground font-semibold text-xs uppercase tracking-wider px-2 mt-4 mb-1">
+                  Shared With Me ({filteredData.editor.length})
+                </h2>
+                <div className="flex flex-col gap-1">
+                  {filteredData.editor.map((doc) => (
+                    <SidebarOption
+                      key={doc.id}
+                      id={doc.id}
+                      href={`/doc/${doc.roomId}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

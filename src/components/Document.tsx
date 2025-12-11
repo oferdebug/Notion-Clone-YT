@@ -1,16 +1,32 @@
 "use client";
 /** @format */
 
-import useOwner from "@/lib/useOwner";
-import { doc, updateDoc } from "firebase/firestore";
-import { FormEvent, useState, useTransition } from "react";
-import { useDocumentData } from "react-firebase-hooks/firestore";
-import { db } from "../../firebase";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import Editor from "./Editor";
-import { Save, Loader2, FileText } from "lucide-react";
-import { toast } from "sonner";
+import {
+  FormEvent,
+  useState,
+  useTransition,
+} from 'react';
+
+import {
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
+import {
+  FileText,
+  Loader2,
+  Save,
+} from 'lucide-react';
+import { useDocumentData } from 'react-firebase-hooks/firestore';
+import { toast } from 'sonner';
+
+import useOwner from '@/lib/useOwner';
+
+import { db } from '../../firebase';
+import DeleteDocumentButton from './DeleteDocumentButton';
+import Editor from './Editor';
+import ShareDocumentButton from './ShareDocumentButton';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 function Document({ id }: { id: string }) {
   const [data, loading, error] = useDocumentData(doc(db, "documents", id));
@@ -33,7 +49,7 @@ function Document({ id }: { id: string }) {
             description: 'Your document title has been saved.',
             duration: 3000,
           });
-          setInput(null); // Reset input after successful update
+          setInput(null);
         } catch (error) {
           console.error('Failed to update title:', error);
           toast.error('Failed to update title', {
@@ -95,9 +111,9 @@ function Document({ id }: { id: string }) {
           <Button 
             disabled={isUpdating} 
             type="submit"
-            className="bg-linear-to-r from-primary to-accent text-white hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold px-6 py-6 rounded-xl group relative overflow-hidden"
+            className="bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold px-6 py-6 rounded-xl group relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-linear-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <div className="relative flex items-center gap-2">
               {isUpdating ? (
@@ -116,14 +132,23 @@ function Document({ id }: { id: string }) {
         </form>
       </div>
       
-      <div className="max-w-6xl mx-auto px-10">
-        {/* ManageUsers */}
-        {/* Avatars */}
+      <div className="max-w-6xl mx-auto px-10 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* TODO: Add user avatars here */}
+          </div>
+
+          {isOwner && (
+            <div className="flex items-center gap-2">
+              <ShareDocumentButton docId={id} />
+              <DeleteDocumentButton docId={id} />
+            </div>
+          )}
+        </div>
       </div>
       
       <hr className="max-w-6xl mx-auto mb-10 border-border" />
       
-      {/* Collaborative Editor */}
       <Editor />
     </section>
   );

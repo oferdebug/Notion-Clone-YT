@@ -1,157 +1,197 @@
-'use client';
-
-import { type Editor } from '@tiptap/react';
+"use client";
+/** @format */
 
 import {
   Bold,
-  Italic,
-  Strikethrough,
   Code,
+  FileText,
   Heading1,
   Heading2,
   Heading3,
+  Italic,
   List,
   ListOrdered,
   Quote,
-} from "lucide-react";
+  Redo2,
+  Strikethrough,
+  Undo2,
+} from 'lucide-react';
+
+import { useEditor } from '@tiptap/react';
+
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
 
 interface EditorToolbarProps {
-    editor: Editor;
+  editor: ReturnType<typeof useEditor>;
 }
 
-function EditorToolbar({ editor }: EditorToolbarProps) {
-    return (
-        <div className='sticky top-0 z-50 bg-card border-b border-border backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95'>
-            <div className='max-w-5xl mx-auto px-6 py-3'>
-                <div className='flex items-center gap-1'>
-                    {/* Text Formatting */}
-                    <button
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('bold') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Bold (Ctrl+B)"
-                    >
-                        <Bold size={18} strokeWidth={2.5} />
-                    </button>
+const ToolbarButton = ({
+  onClick,
+  isActive,
+  disabled,
+  children,
+  title,
+}: {
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  title: string;
+}) => (
+  <Button
+    onClick={onClick}
+    variant={isActive ? "default" : "ghost"}
+    size="sm"
+    disabled={disabled}
+    title={title}
+    className={`h-8 w-8 p-0 ${
+      isActive
+        ? "bg-primary text-white"
+        : "hover:bg-muted hover:text-primary"
+    }`}
+  >
+    {children}
+  </Button>
+);
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('italic') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Italic (Ctrl+I)"
-                    >
-                        <Italic size={18} strokeWidth={2.5} />
-                    </button>
+export default function EditorToolbar({ editor }: EditorToolbarProps) {
+  if (!editor) return null;
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleStrike().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('strike') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Strikethrough"
-                    >
-                        <Strikethrough size={18} strokeWidth={2.5} />
-                    </button>
+  // Calculate word count
+  const text = editor.getText();
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const charCount = text.length;
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleCode().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('code') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Code"
-                    >
-                        <Code size={18} strokeWidth={2.5} />
-                    </button>
+  return (
+    <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
+      <div className="max-w-6xl mx-auto px-10 py-3">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Editing Tools */}
+          <div className="flex items-center gap-1 flex-wrap">
+            {/* History */}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().undo().run()}
+              //disabled={!editor.can().chain().focus().undo().run()}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().redo().run()}
+              //disabled={!editor.can().chain().focus().redo().run()}
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              <Redo2 size={16} />
+            </ToolbarButton>
 
-                    <div className="w-px h-6 bg-border mx-2" />
+            <Separator orientation="vertical" className="h-6 mx-1" />
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('heading', { level: 1 }) 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Heading 1"
-                    >
-                        <Heading1 size={18} strokeWidth={2.5} />
-                    </button>
+            {/* Text Formatting */}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              isActive={editor.isActive("bold")}
+              title="Bold (Ctrl+B)"
+            >
+              <Bold size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              isActive={editor.isActive("italic")}
+              title="Italic (Ctrl+I)"
+            >
+              <Italic size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              isActive={editor.isActive("strike")}
+              title="Strikethrough"
+            >
+              <Strikethrough size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              isActive={editor.isActive("code")}
+              title="Inline Code"
+            >
+              <Code size={16} />
+            </ToolbarButton>
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('heading', { level: 2 }) 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Heading 2"
-                    >
-                        <Heading2 size={18} strokeWidth={2.5} />
-                    </button>
+            <Separator orientation="vertical" className="h-6 mx-1" />
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('heading', { level: 3 }) 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Heading 3"
-                    >
-                        <Heading3 size={18} strokeWidth={2.5} />
-                    </button>
+            {/* Headings */}
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 1 })}
+              title="Heading 1"
+            >
+              <Heading1 size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 2 })}
+              title="Heading 2"
+            >
+              <Heading2 size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 3 })}
+              title="Heading 3"
+            >
+              <Heading3 size={16} />
+            </ToolbarButton>
 
-                    <div className="w-px h-6 bg-border mx-2" />
+            <Separator orientation="vertical" className="h-6 mx-1" />
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('bulletList') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Bullet List"
-                    >
-                        <List size={18} strokeWidth={2.5} />
-                    </button>
+            {/* Lists */}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              isActive={editor.isActive("bulletList")}
+              title="Bullet List"
+            >
+              <List size={16} />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              isActive={editor.isActive("orderedList")}
+              title="Numbered List"
+            >
+              <ListOrdered size={16} />
+            </ToolbarButton>
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('orderedList') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Numbered List"
-                    >
-                        <ListOrdered size={18} strokeWidth={2.5} />
-                    </button>
+            <Separator orientation="vertical" className="h-6 mx-1" />
 
-                    <button
-                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                        className={`p-2.5 rounded-lg transition-all duration-200 hover:bg-secondary ${
-                            editor.isActive('blockquote') 
-                                ? 'bg-primary text-primary-foreground shadow-sm' 
-                                : 'text-foreground hover:text-foreground'
-                        }`}
-                        title="Quote"
-                    >
-                        <Quote size={18} strokeWidth={2.5} />
-                    </button>
-                </div>
+            {/* Quote */}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              isActive={editor.isActive("blockquote")}
+              title="Blockquote"
+            >
+              <Quote size={16} />
+            </ToolbarButton>
+          </div>
+
+          {/* Right: Stats */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <FileText size={14} />
+              <span>
+                {wordCount} {wordCount === 1 ? "word" : "words"}
+              </span>
             </div>
+            <Separator orientation="vertical" className="h-4" />
+            <span>{charCount} characters</span>
+          </div>
         </div>
-    )
+      </div>
+    </div>
+  );
 }
 
-export default EditorToolbar;

@@ -1,12 +1,15 @@
 /** @format */
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-
+import {
+  getApp,
+  getApps,
+  initializeApp,
+} from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-	apiKey: 'AIzaSyCX2Dle_SPvU1b4HPzb-34J62PpMicfu1c',
-	authDomain: 'notion-clone-f7651.firebaseapp.com',
+	apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+	authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
 	databaseURL: 'https://notion-clone-f7651-default-rtdb.firebaseio.com',
 	projectId: 'notion-clone-f7651',
 	storageBucket: 'notion-clone-f7651.firebasestorage.app',

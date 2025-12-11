@@ -1,7 +1,15 @@
-import { adminDb } from "../../../firebase-admin";
-import liveblocks from "@/lib/liveblocks";
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from 'next/server';
+
+import liveblocks from '@/lib/liveblocks';
+import {
+  auth,
+  currentUser,
+} from '@clerk/nextjs/server';
+
+import { adminDb } from '../../../firebase-admin';
 
 export async function POST(req: NextRequest) {
   // Auth check: Get authenticated user from Clerk

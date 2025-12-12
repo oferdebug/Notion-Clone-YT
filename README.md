@@ -43,22 +43,27 @@ Password: Demo123!
 ## 📸 Screenshots
 
 <details>
-<summary>View Screenshots</summary>
+<summary>Click to view screenshots</summary>
 
-### Light Mode
-![Light Mode](docs/light-mode.png)
+<br/>
+
+### Homepage - Main Dashboard
+![Homepage](docs/homepage.png)
+*Clean and modern interface with document list and search functionality*
+
+---
+
+### Editor - Light Mode
+![Light Mode](docs/editor.png)
+*Rich text editor with formatting toolbar and real-time collaboration*
+
+---
 
 ### Dark Mode
 ![Dark Mode](docs/dark-mode.png)
 
-### Editor with Slash Commands
-![Slash Commands](docs/slash-commands.png)
-
-### Image Upload
-![Image Upload](docs/image-upload.png)
-
-### Search in Content
-![Search](docs/search.png)
+### Editor
+![Editor](docs/editor.png)
 
 ### Real-time Collaboration
 ![Collaboration](docs/collaboration.gif)

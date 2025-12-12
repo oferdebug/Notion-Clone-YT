@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 <div align="center">
-  <img src="docs/screenshot.png" alt="Notion Clone Screenshot" width="800">
+  <img src="docs/homepage.png" alt="Notion Clone Screenshot" width="800">
 </div>
 
 ---
@@ -67,6 +67,7 @@ Password: Demo123!
 
 ### Real-time Collaboration
 ![Collaboration](docs/collaboration.gif)
+will be added real soon!
 
 </details>
 

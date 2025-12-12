@@ -60,7 +60,7 @@ Password: Demo123!
 ---
 
 ### Dark Mode
-![Dark Mode](docs/dark-mode.png)
+![Dark Mode](docs/darkmode.png)
 
 ### Editor
 ![Editor](docs/editor.png)

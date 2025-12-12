@@ -1,6 +1,8 @@
 "use client";
 /** @format */
 
+import { useRef } from 'react';
+
 import {
   Bold,
   Code,
@@ -8,6 +10,7 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  ImageIcon,
   Italic,
   List,
   ListOrdered,
@@ -17,6 +20,7 @@ import {
   Undo2,
 } from 'lucide-react';
 
+import { uploadImage } from '@/lib/uploadImage';
 import { useEditor } from '@tiptap/react';
 
 import { Button } from './ui/button';
@@ -46,9 +50,7 @@ const ToolbarButton = ({
     disabled={disabled}
     title={title}
     className={`h-8 w-8 p-0 ${
-      isActive
-        ? "bg-primary text-white"
-        : "hover:bg-muted hover:text-primary"
+      isActive ? "bg-primary text-white" : "hover:bg-muted hover:text-primary"
     }`}
   >
     {children}
@@ -56,12 +58,32 @@ const ToolbarButton = ({
 );
 
 export default function EditorToolbar({ editor }: EditorToolbarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!editor) return null;
 
   // Calculate word count
   const text = editor.getText();
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const charCount = text.length;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await uploadImage(file);
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      alert("Failed to upload image. Please try again.");
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
@@ -72,14 +94,12 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
             {/* History */}
             <ToolbarButton
               onClick={() => editor.chain().focus().undo().run()}
-              //disabled={!editor.can().chain().focus().undo().run()}
               title="Undo (Ctrl+Z)"
             >
               <Undo2 size={16} />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor.chain().focus().redo().run()}
-              //disabled={!editor.can().chain().focus().redo().run()}
               title="Redo (Ctrl+Shift+Z)"
             >
               <Redo2 size={16} />
@@ -176,6 +196,23 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
             >
               <Quote size={16} />
             </ToolbarButton>
+
+            <Separator orientation="vertical" className="h-6 mx-1" />
+
+            {/* Image Upload */}
+            <ToolbarButton
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload Image"
+            >
+              <ImageIcon size={16} />
+            </ToolbarButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
           </div>
 
           {/* Right: Stats */}
@@ -194,4 +231,3 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
     </div>
   );
 }
-

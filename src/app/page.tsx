@@ -56,7 +56,8 @@ export default function Home() {
     ? Math.floor((now - (roomsData.docs[0].data().createdAt?.seconds || 0) * 1000) / (1000 * 60 * 60 * 24)) 
     : 0;
 
-  return (
+	return (
+	  //NOTE - This is the main container for the home page
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="relative overflow-hidden">
         {/* Animated background */}

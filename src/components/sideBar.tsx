@@ -1,13 +1,16 @@
 "use client";
 /** @format */
 import {
+  useEffect,
   useMemo,
   useState,
 } from 'react';
 
 import {
   collection,
+  doc,
   DocumentData,
+  getDoc,
   query,
 } from 'firebase/firestore';
 import {
@@ -38,12 +41,19 @@ type RoomDocument = {
   role: string;
   roomId: string;
   userId: string;
+  title?: string;
+  content?: string;
+  matchedContent?: string;
 };
 
 function SideBar() {
   const { user } = useUser();
   const userId = user?.id ?? null;
   const [searchQuery, setSearchQuery] = useState("");
+  const [documentData, setDocumentData] = useState<
+    Record<string, { title: string; content: string }>
+  >({});
+  const [isSearching, setIsSearching] = useState(false);
 
   const roomsRef = userId ? collection(db, "users", userId, "rooms") : null;
   const [data] = useCollection(roomsRef ? query(roomsRef) : null);
@@ -57,12 +67,16 @@ function SideBar() {
     }>(
       (acc, curr) => {
         const roomData = curr.data() as DocumentData;
+        const docData = documentData[curr.id];
+
         const typedRoom: RoomDocument = {
           id: curr.id,
           createdAt: roomData.createdAt,
           role: roomData.role,
           roomId: roomData.roomId,
           userId: roomData.userId,
+          title: docData?.title,
+          content: docData?.content,
         };
 
         if (typedRoom.role === "Owner") {
@@ -78,22 +92,99 @@ function SideBar() {
         editor: [],
       }
     );
-  }, [data]);
+  }, [data, documentData]);
+
+  // Load document data (title + content) for search
+  useEffect(() => {
+    if (!data || !searchQuery.trim()) return;
+
+    const loadDocumentData = async () => {
+      setIsSearching(true);
+      const docData: Record<string, { title: string; content: string }> = {};
+
+      try {
+        await Promise.all(
+          data.docs.map(async (roomDoc) => {
+            const docId = roomDoc.id;
+            try {
+              const docRef = doc(db, "documents", docId);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                const data = docSnap.data();
+                docData[docId] = {
+                  title: data.title || "",
+                  content: data.content || "",
+                };
+              }
+            } catch (error) {
+              console.error(`Error loading data for ${docId}:`, error);
+            }
+          })
+        );
+
+        setDocumentData(docData);
+      } catch (error) {
+        console.error("Error loading document data:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    loadDocumentData();
+  }, [data, searchQuery]);
+
+  // Extract context around matched text
+  const getMatchContext = (
+    text: string,
+    query: string,
+    contextLength: number = 50
+  ): string => {
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const index = lowerText.indexOf(lowerQuery);
+
+    if (index === -1) return "";
+
+    const start = Math.max(0, index - contextLength);
+    const end = Math.min(text.length, index + query.length + contextLength);
+
+    let context = text.substring(start, end);
+    if (start > 0) context = "..." + context;
+    if (end < text.length) context = context + "...";
+
+    return context;
+  };
 
   // Filter documents based on search
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return groupedData;
 
     const query = searchQuery.toLowerCase();
+
+    const filterFn = (doc: RoomDocument) => {
+      // Search in roomId
+      if (doc.roomId.toLowerCase().includes(query)) return true;
+
+      // Search in document ID
+      if (doc.id.toLowerCase().includes(query)) return true;
+
+      // Search in document title
+      if (doc.title && doc.title.toLowerCase().includes(query)) {
+        return true;
+      }
+
+      // Search in document content
+      if (doc.content && doc.content.toLowerCase().includes(query)) {
+        doc.matchedContent = getMatchContext(doc.content, query);
+        return true;
+      }
+
+      return false;
+    };
+
     return {
-      owner: groupedData.owner.filter(doc => 
-        doc.roomId.toLowerCase().includes(query) || 
-        doc.id.toLowerCase().includes(query)
-      ),
-      editor: groupedData.editor.filter(doc => 
-        doc.roomId.toLowerCase().includes(query) || 
-        doc.id.toLowerCase().includes(query)
-      ),
+      owner: groupedData.owner.filter(filterFn),
+      editor: groupedData.editor.filter(filterFn),
     };
   }, [groupedData, searchQuery]);
 
@@ -111,7 +202,7 @@ function SideBar() {
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search documents..."
+          placeholder="Search in documents..."
           className="pl-10 pr-10 bg-muted/50 border-border focus:bg-background transition-colors"
         />
         {searchQuery && (
@@ -124,20 +215,39 @@ function SideBar() {
         )}
       </div>
 
+      {/* Loading indicator for search */}
+      {isSearching && searchQuery && (
+        <div className="px-3 py-2 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-muted-foreground text-xs">
+              Searching content...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-2 mt-2">
         {filteredData.owner.length === 0 && filteredData.editor.length === 0 ? (
           <div className="px-3 py-6 text-center">
             {searchQuery ? (
               <>
-                <Search className="mx-auto mb-2 text-muted-foreground" size={24} />
-                <p className="text-muted-foreground text-sm">No documents found</p>
+                <Search
+                  className="mx-auto mb-2 text-muted-foreground"
+                  size={24}
+                />
+                <p className="text-muted-foreground text-sm">
+                  No documents found
+                </p>
                 <p className="text-muted-foreground text-xs mt-1">
                   Try a different search term
                 </p>
               </>
             ) : (
               <>
-                <p className="text-muted-foreground text-sm">No documents yet</p>
+                <p className="text-muted-foreground text-sm">
+                  No documents yet
+                </p>
                 <p className="text-muted-foreground text-xs mt-1">
                   Create your first document
                 </p>
@@ -153,11 +263,14 @@ function SideBar() {
                 </h2>
                 <div className="flex flex-col gap-1">
                   {filteredData.owner.map((doc) => (
-                    <SidebarOption
-                      key={doc.id}
-                      id={doc.id}
-                      href={`/doc/${doc.roomId}`}
-                    />
+                    <div key={doc.id}>
+                      <SidebarOption id={doc.id} href={`/doc/${doc.roomId}`} />
+                      {doc.matchedContent && (
+                        <div className="px-3 py-1 ml-6 text-xs text-muted-foreground bg-muted/30 rounded">
+                          {doc.matchedContent}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>
@@ -170,11 +283,14 @@ function SideBar() {
                 </h2>
                 <div className="flex flex-col gap-1">
                   {filteredData.editor.map((doc) => (
-                    <SidebarOption
-                      key={doc.id}
-                      id={doc.id}
-                      href={`/doc/${doc.roomId}`}
-                    />
+                    <div key={doc.id}>
+                      <SidebarOption id={doc.id} href={`/doc/${doc.roomId}`} />
+                      {doc.matchedContent && (
+                        <div className="px-3 py-1 ml-6 text-xs text-muted-foreground bg-muted/30 rounded">
+                          {doc.matchedContent}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>

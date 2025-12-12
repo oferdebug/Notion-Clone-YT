@@ -45,15 +45,15 @@ function Document({ id }: { id: string }) {
           await updateDoc(doc(db, "documents", id), {
             title: currentTitle,
           });
-          toast.success('Title updated!', {
-            description: 'Your document title has been saved.',
+          toast.success("Title updated!", {
+            description: "Your document title has been saved.",
             duration: 3000,
           });
           setInput(null);
         } catch (error) {
-          console.error('Failed to update title:', error);
-          toast.error('Failed to update title', {
-            description: 'Please try again.',
+          console.error("Failed to update title:", error);
+          toast.error("Failed to update title", {
+            description: "Please try again.",
             duration: 4000,
           });
         }
@@ -66,7 +66,9 @@ function Document({ id }: { id: string }) {
       <div className="flex items-center justify-center h-screen">
         <div className="flex items-center gap-3">
           <Loader2 className="animate-spin text-primary" size={24} />
-          <p className="text-muted-foreground font-medium">Loading document...</p>
+          <p className="text-muted-foreground font-medium">
+            Loading document...
+          </p>
         </div>
       </div>
     );
@@ -99,7 +101,10 @@ function Document({ id }: { id: string }) {
       <div className="flex max-w-6xl mx-auto justify-between items-center pb-8 px-10 pt-10">
         <form className="flex flex-1 gap-3 items-center" onSubmit={updateTitle}>
           <div className="flex items-center gap-3 flex-1 p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group">
-            <FileText size={24} className="text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            <FileText
+              size={24}
+              className="text-muted-foreground group-hover:text-primary transition-colors shrink-0"
+            />
             <Input
               value={currentTitle}
               onChange={(e) => setInput(e.target.value)}
@@ -108,13 +113,13 @@ function Document({ id }: { id: string }) {
             />
           </div>
 
-          <Button 
-            disabled={isUpdating} 
+          <Button
+            disabled={isUpdating}
             type="submit"
             className="bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:scale-105 transition-all duration-300 font-semibold px-6 py-6 rounded-xl group relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            
+
             <div className="relative flex items-center gap-2">
               {isUpdating ? (
                 <>
@@ -131,7 +136,7 @@ function Document({ id }: { id: string }) {
           </Button>
         </form>
       </div>
-      
+
       <div className="max-w-6xl mx-auto px-10 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -146,10 +151,11 @@ function Document({ id }: { id: string }) {
           )}
         </div>
       </div>
-      
+
       <hr className="max-w-6xl mx-auto mb-10 border-border" />
-      
-      <Editor />
+
+      {/* Pass document ID to Editor for content sync */}
+      <Editor documentId={id} />
     </section>
   );
 }

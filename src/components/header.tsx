@@ -11,6 +11,7 @@ import {
 } from '@clerk/nextjs';
 
 import Breadcrumbs from './Breadcrumbs';
+import KeyboardShortcuts from './KeyboardShortcuts';
 import ThemeToggle from './ThemeToggle';
 
 function Header() {
@@ -33,7 +34,12 @@ function Header() {
         )}
         <Breadcrumbs />
         <div className="flex items-center gap-4">
+          {/* Keyboard Shortcuts */}
+          <KeyboardShortcuts />
+          
+          {/* Theme Toggle */}
           <ThemeToggle />
+          
           <SignedOut>
             <SignInButton>
               <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold text-sm">

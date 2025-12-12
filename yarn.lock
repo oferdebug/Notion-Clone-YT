@@ -1755,6 +1755,11 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-history/-/extension-history-3.13.0.tgz#061b70da9137ffa8f5d3ac6dab6f0cac41a88f89"
   integrity sha512-uLQahZh5uPv0jlmVho3xPeleaRs7WaZ9lBl03I/cI9EMho9BmF38pXYghjSXUmcsUwsGy0dZbfmE3Skn8iUwxA==
 
+"@tiptap/extension-image@2.1.13":
+  version "2.1.13"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-image/-/extension-image-2.1.13.tgz#835fc6759b2c1184fb54d3704c538029d523dbf6"
+  integrity sha512-7oVAos+BU4KR/zQsfltrd8hgIxKxyxZ19dhwb1BJI2Nt3Mnx+yFPRlRSehID6RT9dYqgW4UW5d6vh/3HQcYYYw==
+
 "@tiptap/extension-italic@2.1.13":
   version "2.1.13"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-italic/-/extension-italic-2.1.13.tgz#1e9521dea002c8d6de833d9fd928d4617623eab8"
@@ -1784,6 +1789,16 @@
   version "2.1.13"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-strike/-/extension-strike-2.1.13.tgz#6605792fa98f0e36861be4c7ed4d4125de8c77aa"
   integrity sha512-VN6zlaCNCbyJUCDyBFxavw19XmQ4LkCh8n20M8huNqW77lDGXA2A7UcWLHaNBpqAijBRu9mWI8l4Bftyf2fcAw==
+
+"@tiptap/extension-task-item@^3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-task-item/-/extension-task-item-3.13.0.tgz#26fab328d63793f465d74ba068dcbec8eba5859f"
+  integrity sha512-4+IkwoKchHQSxzEtVgpjSTJ/ey++Vf9WFiaY0o1ijmvQ7XvvXv4ZvO7uJrawShCIf0tmA56fjuMcZc5qJITQKQ==
+
+"@tiptap/extension-task-list@^3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-task-list/-/extension-task-list-3.13.0.tgz#5fdcb2eca441d49855b66d378b9ca2ad65923653"
+  integrity sha512-oqJrLR3yKlSwDDr6CCF27g2bDybFcvkTyn/HReFpteziGeQs2DWJ5sY+tSWX1eKhnTnZbEjG5G/oie/vJqIIow==
 
 "@tiptap/extension-text@2.1.13":
   version "2.1.13"
@@ -1821,6 +1836,11 @@
   dependencies:
     "@tiptap/extension-bubble-menu" "^2.1.13"
     "@tiptap/extension-floating-menu" "^2.1.13"
+
+"@tiptap/suggestion@^3.13.0":
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-3.13.0.tgz#ca4864323c9c7e7ce92f69c35e2d0a80713f2f68"
+  integrity sha512-IXNvyLITpPiuXHn/q1ntztPYJZMFjPAokKj+OQz3MFNYlzAX3I409KD/EwwCubisRIAFiNX0ZjIIXxxZ3AhFTw==
 
 "@tootallnate/once@2":
   version "2.0.0"

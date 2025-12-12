@@ -18,6 +18,9 @@
 
 🚀 **Real-time Collaborative Editing** - Edit documents simultaneously with team members  
 ✍️ **Rich Text Editor** - Advanced formatting powered by Tiptap  
+🖼️ **Image Upload** - Drag & drop, paste, or upload images with Firebase Storage  
+🔍 **Full-Text Search** - Search in document titles and content  
+⌨️ **Slash Commands** - Quick formatting with `/` menu  
 🔐 **Secure Authentication** - Clerk authentication with Google OAuth  
 🎨 **Modern Design** - Modern Notion Pro Design System  
 🌙 **Dark Mode** - Full dark mode support  
@@ -48,8 +51,14 @@ Password: Demo123!
 ### Dark Mode
 ![Dark Mode](docs/dark-mode.png)
 
-### Editor
-![Editor](docs/editor.png)
+### Editor with Slash Commands
+![Slash Commands](docs/slash-commands.png)
+
+### Image Upload
+![Image Upload](docs/image-upload.png)
+
+### Search in Content
+![Search](docs/search.png)
 
 ### Real-time Collaboration
 ![Collaboration](docs/collaboration.gif)
@@ -69,7 +78,7 @@ Password: Demo123!
 
 ### Backend & Services
 - **[Clerk](https://clerk.com/)** - Authentication & User Management
-- **[Firebase](https://firebase.google.com/)** - Firestore Database
+- **[Firebase](https://firebase.google.com/)** - Firestore Database + Storage
 - **[Liveblocks](https://liveblocks.io/)** - Real-time Collaboration
 - **[Yjs](https://yjs.dev/)** - CRDT for Conflict Resolution
 
@@ -82,6 +91,7 @@ Password: Demo123!
 - **[Lucide React](https://lucide.dev/)** - Icons
 - **[Sonner](https://sonner.emilkowal.ski/)** - Toast Notifications
 - **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme Management
+- **[Tippy.js](https://atomiks.github.io/tippyjs/)** - Tooltips & Popovers
 
 ---
 
@@ -159,12 +169,17 @@ Notion-Clone/
 │   │   ├── Editor.tsx           # Tiptap editor
 │   │   ├── EditorToolbar.tsx    # Editor toolbar
 │   │   ├── Header.tsx           # Top header
-│   │   ├── SideBar.tsx          # Sidebar
+│   │   ├── SideBar.tsx          # Sidebar with search
+│   │   ├── slashCommands.tsx    # Slash commands menu
 │   │   └── ...
+│   │
+│   ├── hooks/
+│   │   └── useSyncEditorContent.ts  # Content sync hook
 │   │
 │   └── lib/
 │       ├── utils.ts             # Utility functions
-│       └── liveblocks.ts        # Liveblocks config
+│       ├── liveblocks.ts        # Liveblocks config
+│       └── uploadImage.ts       # Image upload utility
 │
 ├── actions/
 │   └── actions.ts               # Server Actions
@@ -219,9 +234,11 @@ Notion-Clone/
 - [x] Update title
 - [x] Personal document list
 - [x] Shared documents
+- [x] **Search in titles**
+- [x] **Search in content** ⭐ NEW!
+- [x] **Context preview in search** ⭐ NEW!
 - [ ] Delete document
 - [ ] Duplicate document
-- [ ] Search documents
 - [ ] Sort and filter
 
 ### Text Editor
@@ -234,16 +251,56 @@ Notion-Clone/
 - [x] Numbered Lists
 - [x] Blockquotes
 - [x] Code Blocks
+- [x] **Slash Commands (`/`)** ⭐ NEW!
+- [x] **Image Upload** ⭐ NEW!
+  - [x] Drag & drop
+  - [x] Paste from clipboard
+  - [x] Toolbar button
+  - [x] URL input
 - [ ] Links
-- [ ] Images
 - [ ] Tables
 - [ ] Text Color
+
+### Slash Commands ⭐ NEW!
+Type `/` to access quick formatting:
+- **Text** - Plain paragraph
+- **Heading 1, 2, 3** - Section headings
+- **Bullet List** - Simple bullet list
+- **Numbered List** - Ordered list
+- **Quote** - Blockquote
+- **Code Block** - Code snippet
+- **Image** - Upload or embed image
+
+### Image Upload ⭐ NEW!
+Multiple ways to add images:
+1. **Drag & Drop** - Drag image file into editor
+2. **Paste** - Copy image and paste (Ctrl+V)
+3. **Toolbar Button** - Click image icon in toolbar
+4. **Slash Command** - Type `/image`
+
+Features:
+- ✅ Automatic upload to Firebase Storage
+- ✅ Progress indicator
+- ✅ Max 5MB file size
+- ✅ Supports PNG, JPG, GIF, WEBP
+- ✅ Responsive images
+- ✅ Rounded corners styling
+
+### Full-Text Search ⭐ NEW!
+Powerful search functionality:
+- ✅ Search in document titles
+- ✅ Search in document content
+- ✅ Real-time search results
+- ✅ Context preview with matched text
+- ✅ Auto-save content for searchability
+- ✅ Debounced search (2s delay)
 
 ### Collaboration
 - [x] Real-time sync
 - [x] Cursor tracking
 - [x] User presence
 - [x] Conflict resolution
+- [x] Auto-save to Firestore
 - [ ] Comments
 - [ ] @Mentions
 - [ ] Version history
@@ -254,6 +311,7 @@ Notion-Clone/
 - [x] Loading States
 - [x] Breadcrumbs
 - [x] Mobile Menu
+- [x] Search with loading indicator
 - [ ] Keyboard Shortcuts Modal
 - [ ] Command Palette
 - [ ] Error Boundaries
@@ -299,12 +357,33 @@ service cloud.firestore {
 }
 ```
 
+### Firebase Storage Rules
+
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /images/{imageId} {
+      // Allow authenticated users to read
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to upload images
+      // Max 5MB, only image files
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
 ### Best Practices
 - ✅ Environment variables in use
 - ✅ API keys not exposed in code
 - ✅ Clerk authentication
 - ✅ Server-side validation
 - ✅ Protected API routes
+- ✅ Firebase Storage security rules
 - ⚠️ Rate limiting recommended
 
 ---
@@ -354,9 +433,13 @@ vercel --prod
 - [ ] ✅ Sign-In/Sign-Up works
 - [ ] ✅ Document creation works
 - [ ] ✅ Real-time editing works
+- [ ] ✅ Image upload works
+- [ ] ✅ Search works
+- [ ] ✅ Slash commands work
 - [ ] ✅ Dark Mode works
 - [ ] ✅ Mobile responsive
 - [ ] ✅ Firebase Rules configured
+- [ ] ✅ Firebase Storage Rules configured
 - [ ] ⚠️ Custom Domain (optional)
 - [ ] ⚠️ Analytics (optional)
 
@@ -471,19 +554,26 @@ Have an idea for a new feature?
 
 ## 🗺️ Roadmap
 
-### Version 1.1 (Coming Soon)
+### ✅ Version 1.1 (Current - December 2024)
+- [x] **Image Upload** - Multiple upload methods
+- [x] **Full-Text Search** - Search in content
+- [x] **Slash Commands** - Quick formatting menu
+- [x] Auto-save content to Firestore
+- [x] Search context preview
+
+### Version 1.2 (Coming Soon)
 - [ ] Delete documents
 - [ ] Share document with others
-- [ ] Search documents
 - [ ] Link support
 - [ ] Undo/Redo UI
+- [ ] Mobile responsive improvements
 
-### Version 1.2
-- [ ] Image upload
+### Version 1.3
 - [ ] Document templates
 - [ ] Command Palette (Ctrl+K)
 - [ ] Keyboard Shortcuts Modal
 - [ ] Folders and organization
+- [ ] Duplicate document
 
 ### Version 2.0
 - [ ] Comments system
@@ -491,6 +581,7 @@ Have an idea for a new feature?
 - [ ] Version History
 - [ ] Export to PDF/Markdown
 - [ ] Offline Support
+- [ ] Tables support
 
 ---
 
@@ -502,6 +593,47 @@ Have an idea for a new feature?
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/oferdebug/Notion-Clone-YT)
 
 **Current Status**: 🟢 Active Development
+
+**Latest Release**: v1.1.0 (December 2024)
+
+---
+
+## 📝 Changelog
+
+### v1.1.0 (December 2024)
+#### ✨ New Features
+- **Image Upload System**
+  - Drag & drop support
+  - Clipboard paste (Ctrl+V)
+  - Toolbar button integration
+  - Firebase Storage integration
+  - Progress indicator
+  - File validation (type & size)
+  
+- **Full-Text Search**
+  - Search in document titles
+  - Search in document content
+  - Real-time results
+  - Context preview
+  - Auto-save content for indexing
+  
+- **Slash Commands Menu**
+  - 9 quick formatting commands
+  - Keyboard navigation (Arrow keys)
+  - Fuzzy search filtering
+  - Modern popup UI with Tippy.js
+
+#### 🔧 Improvements
+- Auto-save document content to Firestore (2s debounce)
+- Enhanced sidebar with search functionality
+- Loading indicators for search operations
+- Improved TypeScript type safety
+- Better error handling
+
+#### 🐛 Bug Fixes
+- Fixed ESLint warnings in components
+- Resolved React hooks violations
+- Fixed forwardRef typing issues
 
 ---
 
@@ -540,6 +672,7 @@ in the Software without restriction...
 - [Firebase](https://firebase.google.com/) - Backend Services
 - [Liveblocks](https://liveblocks.io/) - Real-time Collaboration
 - [Tiptap](https://tiptap.dev/) - Editor Framework
+- [Tippy.js](https://atomiks.github.io/tippyjs/) - Tooltips & Popovers
 
 ### Community
 - [shadcn](https://twitter.com/shadcn) - shadcn/ui

@@ -66,7 +66,7 @@ Password: Demo123!
 ![Editor](docs/editor.png)
 
 ### Real-time Collaboration
-![Collaboration](docs/collabrition-working.png)
+![Collaboration](docs/collabrition-working2.png)
 will be added real soon!
 
 </details>
